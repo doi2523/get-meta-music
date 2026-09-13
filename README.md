@@ -9,16 +9,21 @@ Sẵn sàng chạy dưới dạng **Serverless Function trên Vercel** hoặc **
 ## 🛠 Cấu trúc dự án Vercel
 
 ```
-spotify/
-├── go.mod            # Cấu hình Go module (Standard Library)
+get-meta-music/
+├── go.mod            # Cấu hình Go module
 ├── vercel.json       # Cấu hình Deploy Vercel (@vercel/go builder)
-├── main.go           # Server HTTP chạy dưới máy local (go run .)
 ├── api/
 │   └── index.go      # Vercel Serverless Function entrypoint
-├── music/
-│   ├── models.go     # Data Struct definitions
-│   ├── isrc.go       # Tra cứu ISRC (Deezer, song.link, Lynkify)
-│   └── metadata.go   # Scraper metadata (Spotify Embed, oEmbed, Apple iTunes)
+├── cmd/
+│   └── server/
+│       └── main.go   # Server HTTP local (go run ./cmd/server)
+├── internal/
+│   ├── handler/      # Shared HTTP handlers & CORS routing
+│   │   └── handler.go
+│   └── music/        # Logic trích xuất metadata & ISRC
+│       ├── models.go
+│       ├── isrc.go
+│       └── metadata.go
 └── README.md         # Hướng dẫn sử dụng
 ```
 
@@ -64,7 +69,7 @@ spotify/
 Chạy lệnh sau tại thư mục dự án:
 
 ```bash
-go run .
+go run ./cmd/server
 ```
 
 Mặc định server khởi chạy tại `http://localhost:8080` (hoặc tự động đổi sang `8088` nếu 8080 bị bận).
