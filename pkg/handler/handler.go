@@ -48,32 +48,37 @@ func applyCORSHeaders(w http.ResponseWriter) {
 
 // ExtractURLFromRequest extracts the target music URL from query params or POST body.
 func ExtractURLFromRequest(r *http.Request) string {
+	var targetURL string
+
 	// Prefer raw query parsing to preserve URLs with nested query strings
 	if strings.Contains(r.URL.RawQuery, "url=") {
 		parts := strings.SplitN(r.URL.RawQuery, "url=", 2)
 		if len(parts) > 1 && parts[1] != "" {
-			targetURL := parts[1]
-			if unescaped, err := url.QueryUnescape(targetURL); err == nil && strings.HasPrefix(unescaped, "http") {
-				return unescaped
+			targetURL = parts[1]
+			// Strip endpoint query params like &platform= if appended unencoded
+			if idx := strings.Index(targetURL, "&platform="); idx != -1 {
+				targetURL = targetURL[:idx]
 			}
-			return targetURL
+			if unescaped, err := url.QueryUnescape(targetURL); err == nil && strings.HasPrefix(unescaped, "http") {
+				targetURL = unescaped
+			}
 		}
 	}
 
-	if rawURL := r.URL.Query().Get("url"); rawURL != "" {
-		return rawURL
+	if targetURL == "" {
+		targetURL = r.URL.Query().Get("url")
 	}
 
-	if r.Method == http.MethodPost {
+	if targetURL == "" && r.Method == http.MethodPost && r.Body != nil {
 		var reqBody struct {
 			URL string `json:"url"`
 		}
 		if err := json.NewDecoder(r.Body).Decode(&reqBody); err == nil && reqBody.URL != "" {
-			return reqBody.URL
+			targetURL = reqBody.URL
 		}
 	}
 
-	return ""
+	return targetURL
 }
 
 func handleMetadata(w http.ResponseWriter, r *http.Request) {

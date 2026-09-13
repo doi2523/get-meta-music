@@ -103,7 +103,11 @@ func GetSpotifyMetadata(rawURL string) (*SongMetadata, error) {
 
 	// 4. Try ISRC Lookup (Deezer / Lynkify)
 	log.Printf("   ├─ [Step 4] Querying ISRC lookup for Spotify URL...")
-	isrcData, err := GetISRCFromURL(rawURL)
+	lookupURL := rawURL
+	if meta.SpotifyURL != "" {
+		lookupURL = meta.SpotifyURL
+	}
+	isrcData, err := GetISRCFromURL(lookupURL)
 	if err == nil && isrcData != nil {
 		meta.ISRC = isrcData.ISRC
 		if isrcData.Source != "" {

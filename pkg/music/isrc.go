@@ -42,7 +42,11 @@ func clearLynkifyCache() {
 
 func cleanSpotifyURL(rawURL string) string {
 	re := regexp.MustCompile(`open\.spotify\.com/intl-[^/]+/`)
-	return re.ReplaceAllString(rawURL, "open.spotify.com/")
+	rawURL = re.ReplaceAllString(rawURL, "open.spotify.com/")
+	if idx := strings.Index(rawURL, "&platform="); idx != -1 {
+		rawURL = rawURL[:idx]
+	}
+	return rawURL
 }
 
 // GetISRCFromURL attempts to retrieve ISRC data using song.link + Deezer, with fallbacks to Lynkify & Apple Music.
@@ -337,6 +341,7 @@ func searchBySpotify(inputVal string, isIDOnly bool) (*ISRCData, error) {
 		parts := strings.Split(inputVal, "/")
 		last := parts[len(parts)-1]
 		trackID = strings.Split(last, "?")[0]
+		trackID = strings.Split(trackID, "&")[0]
 	}
 
 	if trackID == "" {
