@@ -266,13 +266,12 @@ func handleGetInfoMusicV3(w http.ResponseWriter, r *http.Request) {
 	var appleMusicURL *string
 	var spotifyURL *string
 
-	if platformRes == "spotify" {
+	switch platformRes {
+	case "spotify":
 		spotifyURL = strPtr(meta.SpotifyURL)
-	} else if platformRes == "apple" {
+
+	case "apple":
 		appleMusicURL = strPtr(meta.AppleMusicURL)
-	} else {
-		appleMusicURL = strPtr(meta.AppleMusicURL)
-		spotifyURL = strPtr(meta.SpotifyURL)
 	}
 
 	log.Printf("✨ [getInfoMusicV3] Extracted: Title='%s', Artist='%s', ISRC='%s', PreviewURL='%s'", meta.SongTitle, meta.Artist, meta.ISRC, meta.PreviewURL)
