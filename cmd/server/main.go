@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"os"
 
-	"get-meta-music/internal/handler"
+	"get-meta-music/pkg/handler"
 )
 
 func main() {

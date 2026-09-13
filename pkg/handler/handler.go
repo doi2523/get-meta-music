@@ -10,7 +10,7 @@ import (
 	"net/url"
 	"strings"
 
-	"get-meta-music/internal/music"
+	"get-meta-music/pkg/music"
 )
 
 // Handler is the single entry point for all HTTP requests.

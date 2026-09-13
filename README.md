@@ -17,7 +17,7 @@ get-meta-music/
 ├── cmd/
 │   └── server/
 │       └── main.go   # Server HTTP local (go run ./cmd/server)
-├── internal/
+├── pkg/
 │   ├── handler/      # Shared HTTP handlers & CORS routing
 │   │   └── handler.go
 │   └── music/        # Logic trích xuất metadata & ISRC
