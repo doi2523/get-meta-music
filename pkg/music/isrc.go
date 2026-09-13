@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"os"
 	"regexp"
 	"strings"
 	"sync"
@@ -27,8 +28,24 @@ var (
 	cachedActions      *LynkifyActions
 	cachedSpotifyToken string
 	tokenMutex         sync.RWMutex
-	httpClient         = &http.Client{Timeout: 15 * time.Second}
+	httpClient         = &http.Client{
+		Timeout: 15 * time.Second,
+		Transport: &http.Transport{
+			Proxy: getProxyFromEnv,
+		},
+	}
 )
+
+func getProxyFromEnv(req *http.Request) (*url.URL, error) {
+	if proxyStr := os.Getenv("PROXY_URL"); proxyStr != "" {
+		if proxyURL, err := url.Parse(proxyStr); err == nil {
+			return proxyURL, nil
+		} else {
+			log.Printf("⚠️ [PROXY_URL] Failed to parse proxy URL '%s': %v", proxyStr, err)
+		}
+	}
+	return http.ProxyFromEnvironment(req)
+}
 
 func clearLynkifyCache() {
 	actionsMutex.Lock()
