@@ -180,9 +180,14 @@ type GetInfoMusicV3Response struct {
 }
 
 func handleGetInfoMusicV3(w http.ResponseWriter, r *http.Request) {
+	log.Printf("==================================================")
+	log.Printf("🚀 [getInfoMusicV3 Stage 1/5] Received Request [%s %s]", r.Method, r.URL.Path)
+
 	var reqBody GetInfoMusicV3Request
 	if r.Method == http.MethodPost && r.Body != nil {
-		_ = json.NewDecoder(r.Body).Decode(&reqBody)
+		if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
+			log.Printf("⚠️ [getInfoMusicV3 Stage 1/5] Failed to decode JSON body: %v", err)
+		}
 	}
 
 	if reqBody.URL == "" {
@@ -193,7 +198,10 @@ func handleGetInfoMusicV3(w http.ResponseWriter, r *http.Request) {
 		reqBody.Platform = r.URL.Query().Get("platform")
 	}
 
+	log.Printf("📥 [getInfoMusicV3 Stage 1/5] Input Parameters -> URL: %s | Platform: %s", reqBody.URL, reqBody.Platform)
+
 	if reqBody.URL == "" {
+		log.Printf("❌ [getInfoMusicV3 Stage 1/5] Rejected: Missing 'url' parameter")
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(map[string]interface{}{
 			"success": false,
@@ -202,22 +210,25 @@ func handleGetInfoMusicV3(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Printf("📥 [%s %s] Parsing V3 URL: %s (platform: %s)", r.Method, r.URL.Path, reqBody.URL, reqBody.Platform)
-
 	var meta *music.SongMetadata
 	var err error
 
 	platformLower := strings.ToLower(reqBody.Platform)
+	log.Printf("🔀 [getInfoMusicV3 Stage 2/5] Routing platform logic: '%s'", platformLower)
+
 	if platformLower == "apple" || platformLower == "apple-music" {
+		log.Printf("🍎 [getInfoMusicV3 Stage 3/5] Executing GetAppleMusicMetadata...")
 		meta, err = music.GetAppleMusicMetadata(reqBody.URL)
 	} else if platformLower == "spotify" {
+		log.Printf("🎧 [getInfoMusicV3 Stage 3/5] Executing GetSpotifyMetadata...")
 		meta, err = music.GetSpotifyMetadata(reqBody.URL)
 	} else {
+		log.Printf("🔍 [getInfoMusicV3 Stage 3/5] Platform auto-detect: Executing GetSongMetadata...")
 		meta, err = music.GetSongMetadata(reqBody.URL)
 	}
 
 	if err != nil {
-		log.Printf("❌ Error parsing V3 metadata: %v", err)
+		log.Printf("❌ [getInfoMusicV3 Stage 3/5] Metadata extraction failed: %v", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(map[string]interface{}{
 			"success": false,
@@ -231,6 +242,15 @@ func handleGetInfoMusicV3(w http.ResponseWriter, r *http.Request) {
 		platformRes = "spotify"
 	}
 
+	log.Printf("✨ [getInfoMusicV3 Stage 4/5] Metadata extracted successfully:")
+	log.Printf("   ├─ Song Title:  %s", meta.SongTitle)
+	log.Printf("   ├─ Artist:      %s", meta.Artist)
+	log.Printf("   ├─ ISRC:        %s", meta.ISRC)
+	log.Printf("   ├─ Preview URL: %s", meta.PreviewURL)
+	log.Printf("   ├─ Image URL:   %s", meta.ImageURL)
+	log.Printf("   ├─ Source:      %s", meta.Source)
+	log.Printf("   └─ Platform:    %s", platformRes)
+
 	resp := GetInfoMusicV3Response{
 		Artist:        meta.Artist,
 		ImageURL:      meta.ImageURL,
@@ -243,6 +263,9 @@ func handleGetInfoMusicV3(w http.ResponseWriter, r *http.Request) {
 		SongTitle:     meta.SongTitle,
 		Platform:      platformRes,
 	}
+
+	log.Printf("📤 [getInfoMusicV3 Stage 5/5] Sending HTTP 200 OK Response")
+	log.Printf("==================================================")
 
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(resp)

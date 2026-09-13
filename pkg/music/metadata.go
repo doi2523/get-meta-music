@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"html"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -28,6 +29,7 @@ func GetSpotifyMetadata(rawURL string) (*SongMetadata, error) {
 	}
 
 	rawURL = cleanSpotifyURL(rawURL)
+	log.Printf("🎧 [GetSpotifyMetadata] Starting extraction for: %s", rawURL)
 
 	meta := &SongMetadata{
 		SpotifyURL: rawURL,
@@ -41,6 +43,7 @@ func GetSpotifyMetadata(rawURL string) (*SongMetadata, error) {
 	if len(matchTrack) > 1 {
 		trackID := matchTrack[1]
 		meta.SpotifyURL = fmt.Sprintf("https://open.spotify.com/track/%s", trackID)
+		log.Printf("   ├─ [Step 1] Extracted Spotify Track ID: %s", trackID)
 
 		embedURL := fmt.Sprintf("https://open.spotify.com/embed/track/%s", trackID)
 		if embedData, err := fetchSpotifyEmbedData(embedURL); err == nil && embedData != nil {
@@ -48,11 +51,15 @@ func GetSpotifyMetadata(rawURL string) (*SongMetadata, error) {
 			meta.Artist = embedData.Artist
 			meta.PreviewURL = embedData.PreviewURL
 			meta.ImageURL = embedData.ImageURL
+			log.Printf("   ├─ [Step 1 Success] Spotify Embed Data: Title='%s', Artist='%s'", meta.SongTitle, meta.Artist)
+		} else {
+			log.Printf("   ├─ [Step 1 Fallback] Spotify Embed Widget failed: %v", err)
 		}
 	}
 
 	// 2. Fallback to Spotify oEmbed API if essential data still missing
 	if meta.SongTitle == "" || meta.ImageURL == "" {
+		log.Printf("   ├─ [Step 2] Trying Spotify oEmbed API...")
 		if oembedData, err := fetchSpotifyOEmbed(rawURL); err == nil && oembedData != nil {
 			if meta.SongTitle == "" {
 				meta.SongTitle = oembedData.Title
@@ -60,11 +67,15 @@ func GetSpotifyMetadata(rawURL string) (*SongMetadata, error) {
 			if meta.ImageURL == "" {
 				meta.ImageURL = oembedData.ThumbnailURL
 			}
+			log.Printf("   ├─ [Step 2 Success] oEmbed Data: Title='%s'", meta.SongTitle)
+		} else {
+			log.Printf("   ├─ [Step 2 Fallback] oEmbed API failed: %v", err)
 		}
 	}
 
 	// 3. Fallback to Direct HTML Page Scraping
 	if meta.SongTitle == "" || meta.ImageURL == "" {
+		log.Printf("   ├─ [Step 3] Trying direct HTML scraping...")
 		if htmlContent, err := fetchHTMLPage(rawURL); err == nil {
 			if meta.SongTitle == "" {
 				meta.SongTitle = getMetaProperty(htmlContent, "og:title")
@@ -84,12 +95,16 @@ func GetSpotifyMetadata(rawURL string) (*SongMetadata, error) {
 			if meta.PreviewURL == "" {
 				meta.PreviewURL = getMetaProperty(htmlContent, "og:audio")
 			}
+			log.Printf("   ├─ [Step 3 Result] HTML Scraping -> Title='%s', Artist='%s'", meta.SongTitle, meta.Artist)
+		} else {
+			log.Printf("   ├─ [Step 3 Fallback] HTML Scraping failed: %v", err)
 		}
 	}
 
 	// 4. Try ISRC Lookup (Deezer / Lynkify)
-	isrcData, _ := GetISRCFromURL(rawURL)
-	if isrcData != nil {
+	log.Printf("   ├─ [Step 4] Querying ISRC lookup for Spotify URL...")
+	isrcData, err := GetISRCFromURL(rawURL)
+	if err == nil && isrcData != nil {
 		meta.ISRC = isrcData.ISRC
 		if isrcData.Source != "" {
 			meta.Source = isrcData.Source
@@ -103,6 +118,9 @@ func GetSpotifyMetadata(rawURL string) (*SongMetadata, error) {
 		if meta.PreviewURL == "" && isrcData.PreviewURL != "" {
 			meta.PreviewURL = isrcData.PreviewURL
 		}
+		log.Printf("   └─ [Step 4 Success] Found ISRC: %s (Source: %s)", meta.ISRC, meta.Source)
+	} else {
+		log.Printf("   └─ [Step 4 Warning] ISRC Lookup returned no results/error: %v", err)
 	}
 
 	// Validate essential fields
@@ -122,6 +140,8 @@ func GetAppleMusicMetadata(rawURL string) (*SongMetadata, error) {
 		return nil, fmt.Errorf("URL is not a valid Apple Music link")
 	}
 
+	log.Printf("🍎 [GetAppleMusicMetadata] Starting extraction for: %s", rawURL)
+
 	meta := &SongMetadata{
 		AppleMusicURL: rawURL,
 		Source:        "Apple Music",
@@ -130,6 +150,7 @@ func GetAppleMusicMetadata(rawURL string) (*SongMetadata, error) {
 	// 1. Extract Apple Track/Album ID & query iTunes Lookup API
 	appleID := extractAppleID(rawURL)
 	if appleID != "" {
+		log.Printf("   ├─ [Step 1] Parsed Apple ID: %s. Querying iTunes Lookup API...", appleID)
 		if itunesData, err := fetchITunesLookup(appleID); err == nil && itunesData != nil {
 			meta.SongTitle = itunesData.TrackName
 			meta.Artist = itunesData.ArtistName
@@ -141,11 +162,17 @@ func GetAppleMusicMetadata(rawURL string) (*SongMetadata, error) {
 			if itunesData.ISRC != "" {
 				meta.ISRC = itunesData.ISRC
 			}
+			log.Printf("   ├─ [Step 1 Success] iTunes Lookup Data: Title='%s', Artist='%s', ISRC='%s'", meta.SongTitle, meta.Artist, meta.ISRC)
+		} else {
+			log.Printf("   ├─ [Step 1 Fallback] iTunes Lookup API failed: %v", err)
 		}
+	} else {
+		log.Printf("   ├─ [Step 1 Warning] Could not parse Apple ID from URL")
 	}
 
 	// 2. Fallback to Direct HTML Page Scraping
 	if meta.SongTitle == "" || meta.ImageURL == "" {
+		log.Printf("   ├─ [Step 2] Trying HTML Scraping / JSON-LD...")
 		if htmlContent, err := fetchHTMLPage(rawURL); err == nil {
 			jsonLd := getJsonLd(htmlContent)
 
@@ -181,12 +208,16 @@ func GetAppleMusicMetadata(rawURL string) (*SongMetadata, error) {
 					meta.ImageURL = getMetaProperty(htmlContent, "og:image")
 				}
 			}
+			log.Printf("   ├─ [Step 2 Result] HTML Scraping -> Title='%s', Artist='%s'", meta.SongTitle, meta.Artist)
+		} else {
+			log.Printf("   ├─ [Step 2 Fallback] HTML Scraping failed: %v", err)
 		}
 	}
 
 	// 3. Try ISRC Lookup (Deezer / Lynkify)
-	isrcData, _ := GetISRCFromURL(rawURL)
-	if isrcData != nil {
+	log.Printf("   ├─ [Step 3] Querying ISRC lookup for Apple Music URL...")
+	isrcData, err := GetISRCFromURL(rawURL)
+	if err == nil && isrcData != nil {
 		if meta.ISRC == "" {
 			meta.ISRC = isrcData.ISRC
 		}
@@ -202,6 +233,9 @@ func GetAppleMusicMetadata(rawURL string) (*SongMetadata, error) {
 		if meta.PreviewURL == "" && isrcData.PreviewURL != "" {
 			meta.PreviewURL = isrcData.PreviewURL
 		}
+		log.Printf("   └─ [Step 3 Success] Found ISRC: %s (Source: %s)", meta.ISRC, meta.Source)
+	} else {
+		log.Printf("   └─ [Step 3 Warning] ISRC Lookup returned no results/error: %v", err)
 	}
 
 	if meta.SongTitle == "" || meta.ImageURL == "" {
