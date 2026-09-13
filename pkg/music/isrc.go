@@ -113,6 +113,9 @@ func getISRCFromSongLink(rawURL string) (*ISRCData, error) {
 	}
 
 	var songLinkResult struct {
+		LinksByPlatform map[string]struct {
+			URL string `json:"url"`
+		} `json:"linksByPlatform"`
 		EntitiesByUniqueID map[string]struct {
 			ID string `json:"id"`
 		} `json:"entitiesByUniqueId"`
@@ -120,6 +123,15 @@ func getISRCFromSongLink(rawURL string) (*ISRCData, error) {
 
 	if err := json.Unmarshal(body, &songLinkResult); err != nil {
 		return nil, err
+	}
+
+	spotifyURL := ""
+	if sp, ok := songLinkResult.LinksByPlatform["spotify"]; ok {
+		spotifyURL = sp.URL
+	}
+	appleMusicURL := ""
+	if am, ok := songLinkResult.LinksByPlatform["appleMusic"]; ok {
+		appleMusicURL = am.URL
 	}
 
 	var deezerID string
@@ -176,11 +188,13 @@ func getISRCFromSongLink(rawURL string) (*ISRCData, error) {
 
 	if deezerResult.ISRC != "" {
 		return &ISRCData{
-			ISRC:       deezerResult.ISRC,
-			Title:      deezerResult.Title,
-			Artist:     deezerResult.Artist.Name,
-			PreviewURL: deezerResult.Preview,
-			Source:     "Deezer",
+			ISRC:          deezerResult.ISRC,
+			Title:         deezerResult.Title,
+			Artist:        deezerResult.Artist.Name,
+			PreviewURL:    deezerResult.Preview,
+			SpotifyURL:    spotifyURL,
+			AppleMusicURL: appleMusicURL,
+			Source:        "Deezer",
 		}, nil
 	}
 

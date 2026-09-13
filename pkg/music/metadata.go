@@ -108,7 +108,7 @@ func GetSpotifyMetadata(rawURL string) (*SongMetadata, error) {
 		lookupURL = meta.SpotifyURL
 	}
 	isrcData, err := GetISRCFromURL(lookupURL)
-	if err == nil && isrcData != nil {
+	if err == nil && isrcData != nil && isrcData.ISRC != "" {
 		meta.ISRC = isrcData.ISRC
 		if isrcData.Source != "" {
 			meta.Source = isrcData.Source
@@ -122,9 +122,21 @@ func GetSpotifyMetadata(rawURL string) (*SongMetadata, error) {
 		if meta.PreviewURL == "" && isrcData.PreviewURL != "" {
 			meta.PreviewURL = isrcData.PreviewURL
 		}
+		if meta.AppleMusicURL == "" && isrcData.AppleMusicURL != "" {
+			meta.AppleMusicURL = isrcData.AppleMusicURL
+		}
 		log.Printf("   └─ [Step 4 Success] Found ISRC: %s (Source: %s)", meta.ISRC, meta.Source)
 	} else {
 		log.Printf("   └─ [Step 4 Warning] ISRC Lookup returned no results/error: %v", err)
+	}
+
+	// 5. Fallback: Search ISRC by song title & artist if still missing
+	if meta.ISRC == "" && meta.SongTitle != "" && meta.Artist != "" {
+		log.Printf("   ├─ [Step 5 Fallback] Searching ISRC by song title & artist (%s - %s)...", meta.SongTitle, meta.Artist)
+		if isrcRes, err := searchSpotifyByName(meta.SongTitle, meta.Artist); err == nil && isrcRes != nil && isrcRes.ISRC != "" {
+			meta.ISRC = isrcRes.ISRC
+			log.Printf("   └─ [Step 5 Success] Found ISRC via name search: %s", meta.ISRC)
+		}
 	}
 
 	// Validate essential fields
@@ -221,7 +233,7 @@ func GetAppleMusicMetadata(rawURL string) (*SongMetadata, error) {
 	// 3. Try ISRC Lookup (Deezer / Lynkify)
 	log.Printf("   ├─ [Step 3] Querying ISRC lookup for Apple Music URL...")
 	isrcData, err := GetISRCFromURL(rawURL)
-	if err == nil && isrcData != nil {
+	if err == nil && isrcData != nil && isrcData.ISRC != "" {
 		if meta.ISRC == "" {
 			meta.ISRC = isrcData.ISRC
 		}
@@ -237,9 +249,21 @@ func GetAppleMusicMetadata(rawURL string) (*SongMetadata, error) {
 		if meta.PreviewURL == "" && isrcData.PreviewURL != "" {
 			meta.PreviewURL = isrcData.PreviewURL
 		}
+		if meta.SpotifyURL == "" && isrcData.SpotifyURL != "" {
+			meta.SpotifyURL = isrcData.SpotifyURL
+		}
 		log.Printf("   └─ [Step 3 Success] Found ISRC: %s (Source: %s)", meta.ISRC, meta.Source)
 	} else {
 		log.Printf("   └─ [Step 3 Warning] ISRC Lookup returned no results/error: %v", err)
+	}
+
+	// 4. Fallback: Search ISRC by song title & artist if still missing
+	if meta.ISRC == "" && meta.SongTitle != "" && meta.Artist != "" {
+		log.Printf("   ├─ [Step 4 Fallback] Searching ISRC by song title & artist (%s - %s)...", meta.SongTitle, meta.Artist)
+		if isrcRes, err := searchSpotifyByName(meta.SongTitle, meta.Artist); err == nil && isrcRes != nil && isrcRes.ISRC != "" {
+			meta.ISRC = isrcRes.ISRC
+			log.Printf("   └─ [Step 4 Success] Found ISRC via name search: %s", meta.ISRC)
+		}
 	}
 
 	if meta.SongTitle == "" || meta.ImageURL == "" {

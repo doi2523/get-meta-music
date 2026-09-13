@@ -167,6 +167,9 @@ func handleAppleMusic(w http.ResponseWriter, r *http.Request) {
 
 type GetInfoMusicV3Request struct {
 	URL      string `json:"url"`
+	Link     string `json:"link"`
+	MusicURL string `json:"music_url"`
+	SongURL  string `json:"song_url"`
 	Platform string `json:"platform"`
 }
 
@@ -209,7 +212,15 @@ func handleGetInfoMusicV3(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if reqBody.URL == "" {
-		reqBody.URL = ExtractURLFromRequest(r)
+		if reqBody.Link != "" {
+			reqBody.URL = reqBody.Link
+		} else if reqBody.MusicURL != "" {
+			reqBody.URL = reqBody.MusicURL
+		} else if reqBody.SongURL != "" {
+			reqBody.URL = reqBody.SongURL
+		} else {
+			reqBody.URL = ExtractURLFromRequest(r)
+		}
 	}
 
 	if reqBody.Platform == "" {
@@ -235,7 +246,13 @@ func handleGetInfoMusicV3(w http.ResponseWriter, r *http.Request) {
 	platformLower := strings.ToLower(reqBody.Platform)
 	log.Printf("🔀 [getInfoMusicV3 Stage 2/5] Routing platform logic: '%s'", platformLower)
 
-	if platformLower == "apple" || platformLower == "apple-music" {
+	if strings.Contains(reqBody.URL, "spotify.com") {
+		log.Printf("🎧 [getInfoMusicV3 Stage 3/5] Executing GetSpotifyMetadata for Spotify URL...")
+		meta, err = music.GetSpotifyMetadata(reqBody.URL)
+	} else if strings.Contains(reqBody.URL, "music.apple.com") || strings.Contains(reqBody.URL, "apple.com") {
+		log.Printf("🍎 [getInfoMusicV3 Stage 3/5] Executing GetAppleMusicMetadata for Apple Music URL...")
+		meta, err = music.GetAppleMusicMetadata(reqBody.URL)
+	} else if platformLower == "apple" || platformLower == "apple-music" {
 		log.Printf("🍎 [getInfoMusicV3 Stage 3/5] Executing GetAppleMusicMetadata...")
 		meta, err = music.GetAppleMusicMetadata(reqBody.URL)
 	} else if platformLower == "spotify" {
