@@ -78,9 +78,10 @@ Mặc định server khởi chạy tại `http://localhost:8080` (hoặc tự đ
 
 ## 📡 Chi tiết API Endpoints (Vercel & Local)
 
-- **GET / POST** `/metadata?url=...`
-- **GET / POST** `/spotify?url=...`
-- **GET / POST** `/apple-music?url=...`
+- **GET / POST** `/metadata` (hoặc `/api/metadata`)
+- **GET / POST** `/spotify` (hoặc `/api/spotify`)
+- **GET / POST** `/apple-music` (hoặc `/api/apple-music`)
+- **POST** `/getInfoMusicV3` (hoặc `/api/getInfoMusicV3`) với body `{"url": "...", "platform": "apple|spotify"}`
 
 #### Ví dụ Request (GET):
 ```bash

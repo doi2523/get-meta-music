@@ -25,11 +25,11 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 
 	path := r.URL.Path
 	switch {
-	case strings.HasSuffix(path, "/spotify"):
+	case strings.HasSuffix(path, "/spotify"), strings.HasSuffix(path, "/api/spotify"):
 		handleSpotify(w, r)
-	case strings.HasSuffix(path, "/apple-music"):
+	case strings.HasSuffix(path, "/apple-music"), strings.HasSuffix(path, "/api/apple-music"):
 		handleAppleMusic(w, r)
-	case strings.HasSuffix(path, "/getInfoMusicV3"):
+	case strings.HasSuffix(path, "/getInfoMusicV3"), strings.HasSuffix(path, "/api/getInfoMusicV3"):
 		handleGetInfoMusicV3(w, r)
 	case strings.HasSuffix(path, "/metadata"), strings.HasSuffix(path, "/api/metadata"):
 		handleMetadata(w, r)
@@ -261,8 +261,9 @@ func handleRoot(w http.ResponseWriter, r *http.Request) {
 		"status":  "running",
 		"version": "1.0.0",
 		"usage": map[string]string{
-			"GET":  "/metadata?url=https://open.spotify.com/track/...",
-			"POST": "/metadata with JSON body {\"url\": \"https://...\"}",
+			"GET":     "/metadata?url=https://open.spotify.com/track/...",
+			"POST":    "/metadata with JSON body {\"url\": \"https://...\"}",
+			"POST V3": "/getInfoMusicV3 (or /api/getInfoMusicV3) with JSON body {\"url\": \"https://...\", \"platform\": \"spotify|apple\"}",
 		},
 	})
 }
