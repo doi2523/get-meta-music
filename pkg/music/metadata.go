@@ -139,6 +139,12 @@ func GetSpotifyMetadata(rawURL string) (*SongMetadata, error) {
 		}
 	}
 
+	// Fallback: Fetch preview URL if still missing
+	if meta.PreviewURL == "" && (meta.SongTitle != "" || meta.ISRC != "") {
+		log.Printf("   ├─ [Step 6 Fallback] Fetching fallback preview URL for '%s - %s'...", meta.SongTitle, meta.Artist)
+		meta.PreviewURL = fetchFallbackPreviewURL(meta.SongTitle, meta.Artist, meta.ISRC)
+	}
+
 	// Validate essential fields
 	if meta.SongTitle == "" || meta.ImageURL == "" {
 		return nil, fmt.Errorf("essential metadata (song_title or image_url) missing")
@@ -266,6 +272,12 @@ func GetAppleMusicMetadata(rawURL string) (*SongMetadata, error) {
 		}
 	}
 
+	// Fallback: Fetch preview URL if still missing
+	if meta.PreviewURL == "" && (meta.SongTitle != "" || meta.ISRC != "") {
+		log.Printf("   ├─ [Step 5 Fallback] Fetching fallback preview URL for '%s - %s'...", meta.SongTitle, meta.Artist)
+		meta.PreviewURL = fetchFallbackPreviewURL(meta.SongTitle, meta.Artist, meta.ISRC)
+	}
+
 	if meta.SongTitle == "" || meta.ImageURL == "" {
 		return nil, fmt.Errorf("essential metadata (song_title or image_url) missing")
 	}
@@ -359,10 +371,18 @@ func fetchSpotifyEmbedData(embedURL string) (*spotifyEmbedData, error) {
 		imgURL = entity.VisualIdentity.Image[0].URL
 	}
 
+	previewURL := entity.AudioPreview.URL
+	if previewURL == "" {
+		reAudio := regexp.MustCompile(`"audioPreview":\s*\{\s*"url":\s*"([^"]+)"`)
+		if match := reAudio.FindStringSubmatch(string(bodyBytes)); len(match) > 1 {
+			previewURL = strings.ReplaceAll(match[1], `\u0026`, "&")
+		}
+	}
+
 	return &spotifyEmbedData{
 		Title:      songTitle,
 		Artist:     artistStr,
-		PreviewURL: entity.AudioPreview.URL,
+		PreviewURL: previewURL,
 		ImageURL:   imgURL,
 	}, nil
 }
@@ -408,30 +428,33 @@ type iTunesTrack struct {
 }
 
 func fetchITunesLookup(appleID string) (*iTunesTrack, error) {
-	apiURL := fmt.Sprintf("https://itunes.apple.com/lookup?id=%s&country=VN", appleID)
-	req, err := http.NewRequest("GET", apiURL, nil)
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Set("User-Agent", UserAgent)
+	countries := []string{"", "VN", "US", "GB"}
+	for _, country := range countries {
+		apiURL := fmt.Sprintf("https://itunes.apple.com/lookup?id=%s", appleID)
+		if country != "" {
+			apiURL += "&country=" + country
+		}
+		req, err := http.NewRequest("GET", apiURL, nil)
+		if err != nil {
+			continue
+		}
+		req.Header.Set("User-Agent", UserAgent)
 
-	resp, err := httpClient.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
+		resp, err := httpClient.Do(req)
+		if err != nil {
+			continue
+		}
 
-	var result struct {
-		ResultCount int           `json:"resultCount"`
-		Results     []iTunesTrack `json:"results"`
-	}
+		var result struct {
+			ResultCount int           `json:"resultCount"`
+			Results     []iTunesTrack `json:"results"`
+		}
 
-	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
-		return nil, err
-	}
-
-	if result.ResultCount > 0 && len(result.Results) > 0 {
-		return &result.Results[0], nil
+		err = json.NewDecoder(resp.Body).Decode(&result)
+		resp.Body.Close()
+		if err == nil && result.ResultCount > 0 && len(result.Results) > 0 {
+			return &result.Results[0], nil
+		}
 	}
 
 	return nil, fmt.Errorf("no iTunes lookup results")
@@ -573,3 +596,69 @@ func extractImageFromJSONLD(imgObj interface{}) string {
 	}
 	return ""
 }
+
+// fetchFallbackPreviewURL retrieves preview audio URL via Deezer ISRC lookup, iTunes Search API, or Deezer Search API.
+func fetchFallbackPreviewURL(title, artist, isrc string) string {
+	// 1. Try Deezer track lookup by ISRC if available
+	if isrc != "" {
+		deezerURL := fmt.Sprintf("https://api.deezer.com/track/isrc:%s", url.QueryEscape(isrc))
+		if req, err := http.NewRequest("GET", deezerURL, nil); err == nil {
+			req.Header.Set("User-Agent", UserAgent)
+			if resp, err := httpClient.Do(req); err == nil {
+				defer resp.Body.Close()
+				var res struct {
+					Preview string `json:"preview"`
+				}
+				if err := json.NewDecoder(resp.Body).Decode(&res); err == nil && res.Preview != "" {
+					log.Printf("   ├─ [Preview Fallback] Found Deezer preview by ISRC: %s", res.Preview)
+					return res.Preview
+				}
+			}
+		}
+	}
+
+	// 2. Try iTunes Search API
+	if title != "" {
+		query := strings.TrimSpace(fmt.Sprintf("%s %s", title, artist))
+		iTunesURL := fmt.Sprintf("https://itunes.apple.com/search?term=%s&entity=song&limit=1", url.QueryEscape(query))
+		if req, err := http.NewRequest("GET", iTunesURL, nil); err == nil {
+			req.Header.Set("User-Agent", UserAgent)
+			if resp, err := httpClient.Do(req); err == nil {
+				defer resp.Body.Close()
+				var res struct {
+					Results []struct {
+						PreviewUrl string `json:"previewUrl"`
+					} `json:"results"`
+				}
+				if err := json.NewDecoder(resp.Body).Decode(&res); err == nil && len(res.Results) > 0 && res.Results[0].PreviewUrl != "" {
+					log.Printf("   ├─ [Preview Fallback] Found iTunes preview by search: %s", res.Results[0].PreviewUrl)
+					return res.Results[0].PreviewUrl
+				}
+			}
+		}
+	}
+
+	// 3. Try Deezer Search API
+	if title != "" {
+		query := strings.TrimSpace(fmt.Sprintf("%s %s", title, artist))
+		deezerSearchURL := fmt.Sprintf("https://api.deezer.com/search?q=%s", url.QueryEscape(query))
+		if req, err := http.NewRequest("GET", deezerSearchURL, nil); err == nil {
+			req.Header.Set("User-Agent", UserAgent)
+			if resp, err := httpClient.Do(req); err == nil {
+				defer resp.Body.Close()
+				var res struct {
+					Data []struct {
+						Preview string `json:"preview"`
+					} `json:"data"`
+				}
+				if err := json.NewDecoder(resp.Body).Decode(&res); err == nil && len(res.Data) > 0 && res.Data[0].Preview != "" {
+					log.Printf("   ├─ [Preview Fallback] Found Deezer preview by search: %s", res.Data[0].Preview)
+					return res.Data[0].Preview
+				}
+			}
+		}
+	}
+
+	return ""
+}
+

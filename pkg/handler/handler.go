@@ -174,17 +174,17 @@ type GetInfoMusicV3Request struct {
 }
 
 type GetInfoMusicV3Response struct {
-	Artist        *string `json:"artist"`
-	ImageURL      *string `json:"image_url"`
-	ISRC          *string `json:"isrc"`
-	PreviewURL    *string `json:"preview_url"`
-	SongName      *string `json:"song_name"`
-	AppleMusicURL *string `json:"apple_music_url"`
-	SpotifyURL    *string `json:"spotify_url"`
-	Title         *string `json:"title"`
-	SongTitle     *string `json:"song_title"`
-	Album         *string `json:"album"`
-	Platform      *string `json:"platform"`
+	Artist        *string `json:"artist,omitempty"`
+	ImageURL      *string `json:"image_url,omitempty"`
+	ISRC          *string `json:"isrc,omitempty"`
+	PreviewURL    *string `json:"preview_url,omitempty"`
+	SongName      *string `json:"song_name,omitempty"`
+	AppleMusicURL *string `json:"apple_music_url,omitempty"`
+	SpotifyURL    *string `json:"spotify_url,omitempty"`
+	Title         *string `json:"title,omitempty"`
+	SongTitle     *string `json:"song_title,omitempty"`
+	Album         *string `json:"album,omitempty"`
+	Platform      *string `json:"platform,omitempty"`
 }
 
 func strPtr(s string) *string {
@@ -254,15 +254,28 @@ func handleGetInfoMusicV3(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	platformRes := platformReq
+	platformRes := strings.ToLower(platformReq)
 	if platformRes == "" {
-		platformRes = "apple"
 		if strings.Contains(strings.ToLower(meta.Source), "spotify") || strings.Contains(targetURL, "spotify.com") {
 			platformRes = "spotify"
+		} else {
+			platformRes = "apple"
 		}
 	}
 
-	log.Printf("✨ [getInfoMusicV3] Extracted: Title='%s', Artist='%s', ISRC='%s'", meta.SongTitle, meta.Artist, meta.ISRC)
+	var appleMusicURL *string
+	var spotifyURL *string
+
+	if platformRes == "spotify" {
+		spotifyURL = strPtr(meta.SpotifyURL)
+	} else if platformRes == "apple" {
+		appleMusicURL = strPtr(meta.AppleMusicURL)
+	} else {
+		appleMusicURL = strPtr(meta.AppleMusicURL)
+		spotifyURL = strPtr(meta.SpotifyURL)
+	}
+
+	log.Printf("✨ [getInfoMusicV3] Extracted: Title='%s', Artist='%s', ISRC='%s', PreviewURL='%s'", meta.SongTitle, meta.Artist, meta.ISRC, meta.PreviewURL)
 
 	resp := GetInfoMusicV3APIResponse{
 		Status:  "success",
@@ -273,8 +286,8 @@ func handleGetInfoMusicV3(w http.ResponseWriter, r *http.Request) {
 			ISRC:          strPtr(meta.ISRC),
 			PreviewURL:    strPtr(meta.PreviewURL),
 			SongName:      strPtr(meta.SongTitle),
-			AppleMusicURL: strPtr(meta.AppleMusicURL),
-			SpotifyURL:    strPtr(meta.SpotifyURL),
+			AppleMusicURL: appleMusicURL,
+			SpotifyURL:    spotifyURL,
 			Title:         strPtr(meta.SongTitle),
 			SongTitle:     strPtr(meta.SongTitle),
 			Album:         strPtr(meta.Album),
