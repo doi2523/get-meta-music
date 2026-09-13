@@ -3,6 +3,7 @@ package music
 type SongMetadata struct {
 	SongTitle     string `json:"song_title,omitempty"`
 	Artist        string `json:"artist,omitempty"`
+	Album         string `json:"album,omitempty"`
 	SpotifyURL    string `json:"spotify_url,omitempty"`
 	AppleMusicURL string `json:"apple_music_url,omitempty"`
 	PreviewURL    string `json:"preview_url,omitempty"`

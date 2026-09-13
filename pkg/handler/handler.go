@@ -166,17 +166,30 @@ type GetInfoMusicV3Request struct {
 }
 
 type GetInfoMusicV3Response struct {
-	Artist        string `json:"artist"`
-	ImageURL      string `json:"image_url"`
-	ISRC          string `json:"isrc,omitempty"`
-	PreviewURL    string `json:"preview_url,omitempty"`
-	SongName      string `json:"song_name"`
-	AppleMusicURL string `json:"apple_music_url,omitempty"`
-	SpotifyURL    string `json:"spotify_url,omitempty"`
-	Title         string `json:"title"`
-	SongTitle     string `json:"song_title"`
-	Album         string `json:"album,omitempty"`
-	Platform      string `json:"platform"`
+	Artist        *string `json:"artist"`
+	ImageURL      *string `json:"image_url"`
+	ISRC          *string `json:"isrc"`
+	PreviewURL    *string `json:"preview_url"`
+	SongName      *string `json:"song_name"`
+	AppleMusicURL *string `json:"apple_music_url"`
+	SpotifyURL    *string `json:"spotify_url"`
+	Title         *string `json:"title"`
+	SongTitle     *string `json:"song_title"`
+	Album         *string `json:"album"`
+	Platform      *string `json:"platform"`
+}
+
+func strPtr(s string) *string {
+	if s == "" {
+		return nil
+	}
+	return &s
+}
+
+type GetInfoMusicV3APIResponse struct {
+	Status  string                  `json:"status"`
+	Message string                  `json:"message"`
+	Data    *GetInfoMusicV3Response `json:"data"`
 }
 
 func handleGetInfoMusicV3(w http.ResponseWriter, r *http.Request) {
@@ -204,8 +217,9 @@ func handleGetInfoMusicV3(w http.ResponseWriter, r *http.Request) {
 		log.Printf("❌ [getInfoMusicV3 Stage 1/5] Rejected: Missing 'url' parameter")
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(map[string]interface{}{
-			"success": false,
-			"error":   "Thiếu tham số 'url'.",
+			"status":  "error",
+			"message": "Thiếu tham số 'url'.",
+			"data":    nil,
 		})
 		return
 	}
@@ -231,8 +245,9 @@ func handleGetInfoMusicV3(w http.ResponseWriter, r *http.Request) {
 		log.Printf("❌ [getInfoMusicV3 Stage 3/5] Metadata extraction failed: %v", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(map[string]interface{}{
-			"success": false,
-			"error":   fmt.Sprintf("Không thể lấy thông tin bài hát: %v", err),
+			"status":  "error",
+			"message": fmt.Sprintf("Không thể lấy thông tin bài hát: %v", err),
+			"data":    nil,
 		})
 		return
 	}
@@ -251,20 +266,25 @@ func handleGetInfoMusicV3(w http.ResponseWriter, r *http.Request) {
 	log.Printf("   ├─ Source:      %s", meta.Source)
 	log.Printf("   └─ Platform:    %s", platformRes)
 
-	resp := GetInfoMusicV3Response{
-		Artist:        meta.Artist,
-		ImageURL:      meta.ImageURL,
-		ISRC:          meta.ISRC,
-		PreviewURL:    meta.PreviewURL,
-		SongName:      meta.SongTitle,
-		AppleMusicURL: meta.AppleMusicURL,
-		SpotifyURL:    meta.SpotifyURL,
-		Title:         meta.SongTitle,
-		SongTitle:     meta.SongTitle,
-		Platform:      platformRes,
+	resp := GetInfoMusicV3APIResponse{
+		Status:  "success",
+		Message: "ok",
+		Data: &GetInfoMusicV3Response{
+			Artist:        strPtr(meta.Artist),
+			ImageURL:      strPtr(meta.ImageURL),
+			ISRC:          strPtr(meta.ISRC),
+			PreviewURL:    strPtr(meta.PreviewURL),
+			SongName:      strPtr(meta.SongTitle),
+			AppleMusicURL: strPtr(meta.AppleMusicURL),
+			SpotifyURL:    strPtr(meta.SpotifyURL),
+			Title:         strPtr(meta.SongTitle),
+			SongTitle:     strPtr(meta.SongTitle),
+			Album:         strPtr(meta.Album),
+			Platform:      strPtr(platformRes),
+		},
 	}
 
-	log.Printf("📤 [getInfoMusicV3 Stage 5/5] Sending HTTP 200 OK Response")
+	log.Printf("📤 [getInfoMusicV3 Stage 5/5] Sending HTTP 200 OK Response (status: success)")
 	log.Printf("==================================================")
 
 	w.WriteHeader(http.StatusOK)
