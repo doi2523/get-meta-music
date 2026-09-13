@@ -30,6 +30,16 @@ var (
 	httpClient         = &http.Client{Timeout: 15 * time.Second}
 )
 
+func clearLynkifyCache() {
+	actionsMutex.Lock()
+	cachedActions = nil
+	actionsMutex.Unlock()
+
+	tokenMutex.Lock()
+	cachedSpotifyToken = ""
+	tokenMutex.Unlock()
+}
+
 func cleanSpotifyURL(rawURL string) string {
 	re := regexp.MustCompile(`open\.spotify\.com/intl-[^/]+/`)
 	return re.ReplaceAllString(rawURL, "open.spotify.com/")
@@ -54,6 +64,11 @@ func GetISRCFromURL(rawURL string) (*ISRCData, error) {
 	// METHOD 2: FALLBACK SEARCH
 	if strings.Contains(rawURL, "spotify.com") {
 		spotifyRes, err := searchBySpotify(rawURL, false)
+		if err != nil || (spotifyRes != nil && spotifyRes.ISRC == "") {
+			log.Printf("⚠️ Lynkify search failed: %v. Clearing cache and retrying...", err)
+			clearLynkifyCache()
+			spotifyRes, err = searchBySpotify(rawURL, false)
+		}
 		if err == nil && spotifyRes != nil && spotifyRes.ISRC != "" {
 			return spotifyRes, nil
 		}
@@ -440,10 +455,32 @@ func searchSpotifyByName(trackName, artistName string) (*ISRCData, error) {
 	return searchBySpotify(firstID, true)
 }
 
-// searchByAppleURL queries iTunes API by Apple track/album ID.
-// Note: extractAppleID is defined in metadata.go as the single source of truth.
+// searchByAppleURL queries iTunes API by Apple track/album ID
 func searchByAppleURL(rawURL string) (*ISRCData, error) {
-	appleID := extractAppleID(rawURL)
+	var appleID string
+
+	// Try matching ?i=
+	reI := regexp.MustCompile(`[?&]i=(\d+)`)
+	if match := reI.FindStringSubmatch(rawURL); len(match) > 1 {
+		appleID = match[1]
+	}
+
+	// Try matching /song/.../{id}
+	if appleID == "" {
+		reSong := regexp.MustCompile(`/song/.*/(\d+)`)
+		if match := reSong.FindStringSubmatch(rawURL); len(match) > 1 {
+			appleID = match[1]
+		}
+	}
+
+	// Try matching /album/.../{id}
+	if appleID == "" {
+		reAlbum := regexp.MustCompile(`/album/.*/(\d+)`)
+		if match := reAlbum.FindStringSubmatch(rawURL); len(match) > 1 {
+			appleID = match[1]
+		}
+	}
+
 	if appleID == "" {
 		return nil, fmt.Errorf("could not parse Apple ID from URL")
 	}
@@ -494,5 +531,11 @@ func searchByAppleURL(rawURL string) (*ISRCData, error) {
 	}
 
 	log.Printf("⚠️ Apple hidden ISRC for %s. Searching Spotify...", track.TrackName)
-	return searchSpotifyByName(track.TrackName, track.ArtistName)
+	spotifyRes, err := searchSpotifyByName(track.TrackName, track.ArtistName)
+	if err != nil || (spotifyRes != nil && spotifyRes.ISRC == "") {
+		log.Printf("⚠️ Lynkify search failed: %v. Clearing cache and retrying...", err)
+		clearLynkifyCache()
+		spotifyRes, err = searchSpotifyByName(track.TrackName, track.ArtistName)
+	}
+	return spotifyRes, err
 }
