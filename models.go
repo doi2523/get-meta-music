@@ -1,6 +1,6 @@
 package metamusic
 
-import "github.com/doi2523/get-meta-music/pkg/music"
+import "github.com/doi2523/get-music-metadata/pkg/music"
 
 // SongMetadata holds music metadata returned from Spotify or Apple Music.
 type SongMetadata = music.SongMetadata

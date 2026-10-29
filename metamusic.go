@@ -5,7 +5,7 @@ package metamusic
 import (
 	"context"
 
-	"github.com/doi2523/get-meta-music/pkg/music"
+	"github.com/doi2523/get-music-metadata/pkg/music"
 )
 
 var defaultClient = NewClient()

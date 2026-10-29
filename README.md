@@ -1,14 +1,14 @@
 <a id="top"></a>
-# 🎵 Get Meta Music (`get-meta-music`)
+# 🎵 Get Music Metadata (`get-music-metadata`)
 
-[![Go CI](https://github.com/doi2523/get-meta-music/actions/workflows/go.yml/badge.svg)](https://github.com/doi2523/get-meta-music/actions/workflows/go.yml)
-[![Go Reference](https://pkg.go.dev/badge/github.com/doi2523/get-meta-music.svg)](https://pkg.go.dev/github.com/doi2523/get-meta-music)
+[![Go CI](https://github.com/doi2523/get-music-metadata/actions/workflows/go.yml/badge.svg)](https://github.com/doi2523/get-music-metadata/actions/workflows/go.yml)
+[![Go Reference](https://pkg.go.dev/badge/github.com/doi2523/get-music-metadata.svg)](https://pkg.go.dev/github.com/doi2523/get-music-metadata)
 [![Go Version](https://img.shields.io/badge/Go-1.20+-00ADD8?logo=go&logoColor=white)](https://go.dev/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 🌐 **Language**: **English** | [Tiếng Việt](README_VI.md)
 
-**`get-meta-music`** is a comprehensive Golang toolkit and microservice designed to extract music metadata from **Spotify** and **Apple Music**:
+**`get-music-metadata`** is a comprehensive Golang toolkit and microservice designed to extract music metadata from **Spotify** and **Apple Music**:
 - 🎧 **Audio Previews**: Extract 30-second high-quality audio preview streams (MP3/AAC).
 - 🖼 **HD Artwork**: Fetch original high-resolution album cover artwork (up to 600x600px).
 - 🆔 **ISRC Lookup**: Resolve International Standard Recording Codes (ISRC) and cross-link between Spotify ⇄ Apple Music.
@@ -41,13 +41,13 @@
 ### Option 1: Install as a Go Module (SDK)
 Run the following command inside your Go project:
 ```bash
-go get github.com/doi2523/get-meta-music
+go get github.com/doi2523/get-music-metadata
 ```
 
 ### Option 2: Clone repository to run Server or contribute
 ```bash
-git clone https://github.com/doi2523/get-meta-music.git
-cd get-meta-music
+git clone https://github.com/doi2523/get-music-metadata.git
+cd get-music-metadata
 ```
 
 ---
@@ -56,7 +56,7 @@ cd get-meta-music
 
 Import the package into your Go application:
 ```go
-import metamusic "github.com/doi2523/get-meta-music"
+import metamusic "github.com/doi2523/get-music-metadata"
 ```
 
 ### 1. Quickstart with Helper Functions
@@ -68,7 +68,7 @@ import (
 	"fmt"
 	"log"
 
-	metamusic "github.com/doi2523/get-meta-music"
+	metamusic "github.com/doi2523/get-music-metadata"
 )
 
 func main() {
@@ -111,7 +111,7 @@ import (
 	"fmt"
 	"time"
 
-	metamusic "github.com/doi2523/get-meta-music"
+	metamusic "github.com/doi2523/get-music-metadata"
 )
 
 func main() {
@@ -345,12 +345,12 @@ Configure these variables locally, in `.env`, or within your Vercel Project Sett
 ## 📂 Project Structure
 
 ```
-get-meta-music/
+get-music-metadata/
 ├── client.go              # Client struct, Functional Options & Context-aware methods
 ├── metamusic.go           # Top-level API facade: Get, GetSpotify, GetAppleMusic, GetISRC
 ├── models.go              # Exported models & Type aliases (SongMetadata, ISRCData)
 ├── metamusic_test.go      # Unit tests for metamusic package
-├── go.mod                 # Module name: github.com/doi2523/get-meta-music
+├── go.mod                 # Module name: github.com/doi2523/get-music-metadata
 ├── LICENSE                # MIT Open Source License
 ├── README.md              # English documentation (Default)
 ├── README_VI.md           # Vietnamese documentation
@@ -382,11 +382,11 @@ This project is licensed under the [MIT License](LICENSE).
 
 ### ⭐ Give a star if this project helped you!
 
-<a href="https://star-history.com/#doi2523/get-meta-music&Date">
+<a href="https://star-history.com/#doi2523/get-music-metadata&Date">
  <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=doi2523/get-meta-music&type=Date&theme=dark&legend=top-left" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=doi2523/get-meta-music&type=Date&legend=top-left" />
-   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=doi2523/get-meta-music&type=Date&legend=top-left" />
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=doi2523/get-music-metadata&type=Date&theme=dark&legend=top-left" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=doi2523/get-music-metadata&type=Date&legend=top-left" />
+   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=doi2523/get-music-metadata&type=Date&legend=top-left" />
  </picture>
 </a>
 

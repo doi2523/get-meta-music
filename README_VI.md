@@ -1,14 +1,14 @@
 <a id="top"></a>
-# 🎵 Get Meta Music (`get-meta-music`)
+# 🎵 Get Music Metadata (`get-music-metadata`)
 
-[![Go CI](https://github.com/doi2523/get-meta-music/actions/workflows/go.yml/badge.svg)](https://github.com/doi2523/get-meta-music/actions/workflows/go.yml)
-[![Go Reference](https://pkg.go.dev/badge/github.com/doi2523/get-meta-music.svg)](https://pkg.go.dev/github.com/doi2523/get-meta-music)
+[![Go CI](https://github.com/doi2523/get-music-metadata/actions/workflows/go.yml/badge.svg)](https://github.com/doi2523/get-music-metadata/actions/workflows/go.yml)
+[![Go Reference](https://pkg.go.dev/badge/github.com/doi2523/get-music-metadata.svg)](https://pkg.go.dev/github.com/doi2523/get-music-metadata)
 [![Go Version](https://img.shields.io/badge/Go-1.20+-00ADD8?logo=go&logoColor=white)](https://go.dev/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 🌐 **Language**: [English](README.md) | **Tiếng Việt**
 
-**`get-meta-music`** là bộ giải pháp toàn diện bằng Golang dùng để trích xuất metadata âm nhạc từ **Spotify** và **Apple Music**:
+**`get-music-metadata`** là bộ giải pháp toàn diện bằng Golang dùng để trích xuất metadata âm nhạc từ **Spotify** và **Apple Music**:
 - 🎧 **Audio Preview**: Lấy link nghe thử 30s chất lượng cao (MP3/AAC).
 - 🖼 **Artwork**: Ảnh bìa bài hát chất lượng gốc (HD 600x600px).
 - 🆔 **ISRC Lookup**: Tra cứu mã định danh âm nhạc quốc tế (ISRC) và liên kết chéo giữa Spotify ⇄ Apple Music.
@@ -41,13 +41,13 @@
 ### Cách 1: Cài đặt làm Go Module cho dự án Go của bạn
 Chạy lệnh sau trong thư mục dự án Go của bạn:
 ```bash
-go get github.com/doi2523/get-meta-music
+go get github.com/doi2523/get-music-metadata
 ```
 
 ### Cách 2: Clone mã nguồn về máy để chạy Server hoặc đóng góp code
 ```bash
-git clone https://github.com/doi2523/get-meta-music.git
-cd get-meta-music
+git clone https://github.com/doi2523/get-music-metadata.git
+cd get-music-metadata
 ```
 
 ---
@@ -56,7 +56,7 @@ cd get-meta-music
 
 Import thư viện vào code Go của bạn:
 ```go
-import metamusic "github.com/doi2523/get-meta-music"
+import metamusic "github.com/doi2523/get-music-metadata"
 ```
 
 ### 1. Gọi nhanh qua hàm tiện ích (Quickstart)
@@ -68,7 +68,7 @@ import (
 	"fmt"
 	"log"
 
-	metamusic "github.com/doi2523/get-meta-music"
+	metamusic "github.com/doi2523/get-music-metadata"
 )
 
 func main() {
@@ -111,7 +111,7 @@ import (
 	"fmt"
 	"time"
 
-	metamusic "github.com/doi2523/get-meta-music"
+	metamusic "github.com/doi2523/get-music-metadata"
 )
 
 func main() {
@@ -346,12 +346,12 @@ Khi khởi chạy server trên Server/VPS hoặc thiết lập trên Vercel Envi
 ## 📂 Cấu trúc dự án
 
 ```
-get-meta-music/
+get-music-metadata/
 ├── client.go              # Client struct, Functional Options & Context-aware methods
 ├── metamusic.go           # Top-level API facade: Get, GetSpotify, GetAppleMusic, GetISRC
 ├── models.go              # Exported models & Type aliases (SongMetadata, ISRCData)
 ├── metamusic_test.go      # Unit tests cho package metamusic
-├── go.mod                 # Module name: github.com/doi2523/get-meta-music
+├── go.mod                 # Module name: github.com/doi2523/get-music-metadata
 ├── LICENSE                # Giấy phép mã nguồn mở MIT
 ├── README.md              # Tài liệu hướng dẫn sử dụng chi tiết
 ├── vercel.json            # Cấu hình Serverless deployment trên Vercel
@@ -382,11 +382,11 @@ Mã nguồn được phân phối dưới giấy phép [MIT](LICENSE).
 
 ### ⭐ Hãy Star repository này nếu bạn thấy hữu ích!
 
-<a href="https://star-history.com/#doi2523/get-meta-music&Date">
+<a href="https://star-history.com/#doi2523/get-music-metadata&Date">
  <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=doi2523/get-meta-music&type=Date&theme=dark&legend=top-left" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=doi2523/get-meta-music&type=Date&legend=top-left" />
-   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=doi2523/get-meta-music&type=Date&legend=top-left" />
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=doi2523/get-music-metadata&type=Date&theme=dark&legend=top-left" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=doi2523/get-music-metadata&type=Date&legend=top-left" />
+   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=doi2523/get-music-metadata&type=Date&legend=top-left" />
  </picture>
 </a>
 

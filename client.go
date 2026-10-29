@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/doi2523/get-meta-music/pkg/music"
+	"github.com/doi2523/get-music-metadata/pkg/music"
 )
 
 // Logger defines the minimal logging interface.
