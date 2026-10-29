@@ -1,3 +1,4 @@
+<a id="top"></a>
 # 🎵 Get Meta Music (`get-meta-music`)
 
 [![Go CI](https://github.com/doi2523/get-meta-music/actions/workflows/go.yml/badge.svg)](https://github.com/doi2523/get-meta-music/actions/workflows/go.yml)
@@ -30,6 +31,8 @@
    - [Chi tiết từng Endpoint & Mẫu cURL](#4-chi-tiết-từng-endpoint--ví-dụ-curl)
 4. [Biến môi trường (Environment Variables)](#-biến-môi-trường-environment-variables)
 5. [Cấu trúc dự án](#-cấu-trúc-dự-án)
+6. [Giấy phép](#-license)
+7. [Star History](#-star-history)
 
 ---
 
@@ -372,3 +375,23 @@ get-meta-music/
 ## 📄 License
 
 Mã nguồn được phân phối dưới giấy phép [MIT](LICENSE).
+
+---
+
+## ⭐ Star History
+
+### ⭐ Hãy Star repository này nếu bạn thấy hữu ích!
+
+<a href="https://star-history.com/#doi2523/get-meta-music&Date">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=doi2523/get-meta-music&type=Date&theme=dark&legend=top-left" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=doi2523/get-meta-music&type=Date&legend=top-left" />
+   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=doi2523/get-meta-music&type=Date&legend=top-left" />
+ </picture>
+</a>
+
+<br/>
+
+[![Về đầu trang](https://img.shields.io/badge/⬆️_Về_Đầu_Trang-Nhấn_Vào_Đây-blue?style=for-the-badge)](#top)
+
+**Được tạo với ❤️ bởi [Dio](https://github.com/doi2523)**

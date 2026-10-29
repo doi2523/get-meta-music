@@ -1,3 +1,4 @@
+<a id="top"></a>
 # 🎵 Get Meta Music (`get-meta-music`)
 
 [![Go CI](https://github.com/doi2523/get-meta-music/actions/workflows/go.yml/badge.svg)](https://github.com/doi2523/get-meta-music/actions/workflows/go.yml)
@@ -31,6 +32,7 @@
 4. [Environment Variables](#-environment-variables)
 5. [Project Structure](#-project-structure)
 6. [License](#-license)
+7. [Star History](#-star-history)
 
 ---
 
@@ -373,3 +375,23 @@ get-meta-music/
 ## 📄 License
 
 This project is licensed under the [MIT License](LICENSE).
+
+---
+
+## ⭐ Star History
+
+### ⭐ Give a star if this project helped you!
+
+<a href="https://star-history.com/#doi2523/get-meta-music&Date">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=doi2523/get-meta-music&type=Date&theme=dark&legend=top-left" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=doi2523/get-meta-music&type=Date&legend=top-left" />
+   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=doi2523/get-meta-music&type=Date&legend=top-left" />
+ </picture>
+</a>
+
+<br/>
+
+[![Back to Top](https://img.shields.io/badge/⬆️_Back_to_Top-Click_Here-blue?style=for-the-badge)](#top)
+
+**Made with ❤️ by [Dio](https://github.com/doi2523)**
