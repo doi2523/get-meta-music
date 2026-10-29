@@ -30,7 +30,7 @@ func main() {
 
 	log.Printf("🚀 Server music metadata đang chạy tại: http://localhost:%s", port)
 	log.Printf("📌 Ví dụ GET: http://localhost:%s/metadata?url=https://open.spotify.com/intl-vi/track/4cOdK2wGLETKBW3PvgPWqT?autoplay_ok=1", port)
-	log.Printf("📌 Ví dụ GET: http://localhost:%s/metadata?url=https://music.apple.com/vn/album/shape-of-you/1201597002?i=1201597040", port)
+	log.Printf("📌 Ví dụ GET: http://localhost:%s/metadata?url=https://music.apple.com/us/album/shape-of-you/1193701079?i=1193701392", port)
 
 	server := &http.Server{Handler: mux}
 	if err := server.Serve(listener); err != nil {

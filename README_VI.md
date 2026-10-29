@@ -123,7 +123,7 @@ func main() {
 	)
 
 	// Lấy thông tin bài hát từ Apple Music
-	appleURL := "https://music.apple.com/vn/album/shape-of-you/1201597002?i=1201597040"
+	appleURL := "https://music.apple.com/us/album/shape-of-you/1193701079?i=1193701392"
 	meta, err := client.GetAppleMusic(appleURL)
 	if err != nil {
 		fmt.Println("Lỗi:", err)
@@ -262,7 +262,7 @@ curl "http://localhost:8080/metadata?url=https://open.spotify.com/intl-vi/track/
 ```bash
 curl -X POST "http://localhost:8080/metadata" \
      -H "Content-Type: application/json" \
-     -d '{"url": "https://music.apple.com/vn/album/shape-of-you/1201597002?i=1201597040"}'
+     -d '{"url": "https://music.apple.com/us/album/shape-of-you/1193701079?i=1193701392"}'
 ```
 
 **JSON Response mẫu (HTTP 200 OK):**
