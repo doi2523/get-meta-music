@@ -1,5 +1,31 @@
 package music
 
+import "github.com/doi2523/get-music-metadata/internal/logger"
+
+// Logger defines the minimal logging interface.
+type Logger = logger.Logger
+
+// NopLogger is a no-op logger that discards all log messages.
+var NopLogger = logger.NopLogger
+
+// SetLogger sets the active logger.
+func SetLogger(l Logger) {
+	logger.SetLogger(l)
+}
+
+// SetSilent silences or enables internal logging.
+func SetSilent(silent bool) {
+	logger.SetSilent(silent)
+}
+
+func logPrintf(format string, v ...interface{}) {
+	logger.Printf(format, v...)
+}
+
+func logPrintln(v ...interface{}) {
+	logger.Println(v...)
+}
+
 type SongMetadata struct {
 	SongTitle     string `json:"song_title,omitempty"`
 	Artist        string `json:"artist,omitempty"`
@@ -27,3 +53,4 @@ type APIResponse struct {
 	Data    *SongMetadata `json:"data,omitempty"`
 	Error   string        `json:"error,omitempty"`
 }
+

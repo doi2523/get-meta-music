@@ -29,3 +29,17 @@ func TestContextCancellation(t *testing.T) {
 		t.Fatal("expected error due to canceled context, got nil")
 	}
 }
+
+func TestUnsupportedURL(t *testing.T) {
+	_, err := Get("https://youtube.com/watch?v=dQw4w9WgXcQ")
+	if err == nil {
+		t.Fatal("expected error for unsupported domain, got nil")
+	}
+}
+
+func TestSetSilent(t *testing.T) {
+	// Ensure SetSilent toggles without panic
+	SetSilent(true)
+	SetSilent(false)
+}
+

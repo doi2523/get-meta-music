@@ -360,12 +360,14 @@ get-music-metadata/
 ├── cmd/
 │   └── server/
 │       └── main.go        # Entry point cho Standalone HTTP Server Local / Production
+├── internal/
+│   └── logger/            # Logger nội bộ (unexported, không lộ ra ngoài)
+│       └── logger.go
 └── pkg/
     ├── handler/           # HTTP handlers, CORS, Routing, V3 adapter
     │   └── handler.go
     └── music/             # Core logic trích xuất metadata, phân giải ISRC & scrape
         ├── isrc.go
-        ├── logger.go
         ├── metadata.go
         └── models.go
 ```
