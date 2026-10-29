@@ -5,7 +5,7 @@ package handler
 import (
 	"net/http"
 
-	apphandler "get-meta-music/pkg/handler"
+	apphandler "github.com/doi2523/get-meta-music/pkg/handler"
 )
 
 // Handler is the Vercel Serverless Function entry point.

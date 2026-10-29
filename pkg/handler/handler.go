@@ -10,7 +10,7 @@ import (
 	"net/url"
 	"strings"
 
-	"get-meta-music/pkg/music"
+	"github.com/doi2523/get-meta-music/pkg/music"
 )
 
 // Handler is the single entry point for all HTTP requests.
@@ -25,6 +25,8 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 
 	path := r.URL.Path
 	switch {
+	case strings.HasSuffix(path, "/health"), strings.HasSuffix(path, "/api/health"):
+		handleHealth(w, r)
 	case strings.HasSuffix(path, "/spotify"), strings.HasSuffix(path, "/api/spotify"):
 		handleSpotify(w, r)
 	case strings.HasSuffix(path, "/apple-music"), strings.HasSuffix(path, "/api/apple-music"):
@@ -301,6 +303,14 @@ func handleGetInfoMusicV3(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(resp)
 }
 
+func handleHealth(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status": "ok",
+		"time":   "ok",
+	})
+}
+
 func handleRoot(w http.ResponseWriter, r *http.Request) {
 	rawURL := ExtractURLFromRequest(r)
 	if rawURL != "" {
@@ -317,6 +327,7 @@ func handleRoot(w http.ResponseWriter, r *http.Request) {
 			"GET":     "/metadata?url=https://open.spotify.com/track/...",
 			"POST":    "/metadata with JSON body {\"url\": \"https://...\"}",
 			"POST V3": "/getInfoMusicV3 (or /api/getInfoMusicV3) with JSON body {\"url\": \"https://...\", \"platform\": \"spotify|apple\"}",
+			"HEALTH":  "/health",
 		},
 	})
 }

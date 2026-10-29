@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -36,12 +35,42 @@ var (
 	}
 )
 
+// SetHTTPClient configures the HTTP client used for requests.
+func SetHTTPClient(client *http.Client) {
+	if client != nil {
+		httpClient = client
+	}
+}
+
+// SetProxyURL configures a custom HTTP/HTTPS/SOCKS5 proxy.
+func SetProxyURL(proxyStr string) error {
+	if proxyStr == "" {
+		httpClient.Transport = &http.Transport{
+			Proxy: getProxyFromEnv,
+		}
+		return nil
+	}
+	proxyURL, err := url.Parse(proxyStr)
+	if err != nil {
+		return err
+	}
+	httpClient.Transport = &http.Transport{
+		Proxy: http.ProxyURL(proxyURL),
+	}
+	return nil
+}
+
+// SetTimeout configures the HTTP client request timeout.
+func SetTimeout(d time.Duration) {
+	httpClient.Timeout = d
+}
+
 func getProxyFromEnv(req *http.Request) (*url.URL, error) {
 	if proxyStr := os.Getenv("PROXY_URL"); proxyStr != "" {
 		if proxyURL, err := url.Parse(proxyStr); err == nil {
 			return proxyURL, nil
 		} else {
-			log.Printf("⚠️ [PROXY_URL] Failed to parse proxy URL '%s': %v", proxyStr, err)
+			logPrintf("⚠️ [PROXY_URL] Failed to parse proxy URL '%s': %v", proxyStr, err)
 		}
 	}
 	return http.ProxyFromEnvironment(req)
@@ -72,21 +101,21 @@ func GetISRCFromURL(rawURL string) (*ISRCData, error) {
 		rawURL = cleanSpotifyURL(rawURL)
 	}
 
-	log.Printf("🎵 Fetching ISRC for: %s", rawURL)
+	logPrintf("🎵 Fetching ISRC for: %s", rawURL)
 
 	// METHOD 1: song.link + Deezer
 	isrcData, err := getISRCFromSongLink(rawURL)
 	if err == nil && isrcData != nil && isrcData.ISRC != "" {
-		log.Printf("✅ Found ISRC from Deezer: %s", isrcData.ISRC)
+		logPrintf("✅ Found ISRC from Deezer: %s", isrcData.ISRC)
 		return isrcData, nil
 	}
-	log.Println("⚠️ song.link + Deezer failed, proceeding to fallback search...")
+	logPrintln("⚠️ song.link + Deezer failed, proceeding to fallback search...")
 
 	// METHOD 2: FALLBACK SEARCH
 	if strings.Contains(rawURL, "spotify.com") {
 		spotifyRes, err := searchBySpotify(rawURL, false)
 		if err != nil || (spotifyRes != nil && spotifyRes.ISRC == "") {
-			log.Printf("⚠️ Lynkify search failed: %v. Clearing cache and retrying...", err)
+			logPrintf("⚠️ Lynkify search failed: %v. Clearing cache and retrying...", err)
 			clearLynkifyCache()
 			spotifyRes, err = searchBySpotify(rawURL, false)
 		}
@@ -166,7 +195,7 @@ func getISRCFromSongLink(rawURL string) (*ISRCData, error) {
 		return nil, fmt.Errorf("deezer song ID not found in song.link response")
 	}
 
-	log.Printf("🆔 Found Deezer ID: %s", deezerID)
+	logPrintf("🆔 Found Deezer ID: %s", deezerID)
 
 	deezerURL := fmt.Sprintf("https://api.deezer.com/track/%s", deezerID)
 	dReq, err := http.NewRequest("GET", deezerURL, nil)
@@ -292,7 +321,7 @@ func discoverActions() (*LynkifyActions, error) {
 			Search:   hashes[2],
 			GetISRC:  hashes[5],
 		}
-		log.Printf("✅ ACTIONS DISCOVERED: %+v", cachedActions)
+		logPrintf("✅ ACTIONS DISCOVERED: %+v", cachedActions)
 		return cachedActions, nil
 	}
 
@@ -346,7 +375,7 @@ func getSpotifyToken() (string, error) {
 	match := reToken.FindStringSubmatch(string(respBody))
 	if len(match) > 1 {
 		cachedSpotifyToken = match[1]
-		log.Printf("✅ TOKEN OBTAINED: %s", cachedSpotifyToken)
+		logPrintf("✅ TOKEN OBTAINED: %s", cachedSpotifyToken)
 		return cachedSpotifyToken, nil
 	}
 
@@ -566,10 +595,10 @@ func searchByAppleURL(rawURL string) (*ISRCData, error) {
 		}, nil
 	}
 
-	log.Printf("⚠️ Apple hidden ISRC for %s. Searching Spotify...", track.TrackName)
+	logPrintf("⚠️ Apple hidden ISRC for %s. Searching Spotify...", track.TrackName)
 	spotifyRes, err := searchSpotifyByName(track.TrackName, track.ArtistName)
 	if err != nil || (spotifyRes != nil && spotifyRes.ISRC == "") {
-		log.Printf("⚠️ Lynkify search failed: %v. Clearing cache and retrying...", err)
+		logPrintf("⚠️ Lynkify search failed: %v. Clearing cache and retrying...", err)
 		clearLynkifyCache()
 		spotifyRes, err = searchSpotifyByName(track.TrackName, track.ArtistName)
 	}
