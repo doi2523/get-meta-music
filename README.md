@@ -1,8 +1,8 @@
 # 🎵 Get Meta Music (`get-meta-music`)
 
-[![Go Reference](https://pkg.go.dev/badge/github.com/doi2523/get-meta-music.svg)](https://pkg.go.dev/github.com/doi2523/get-meta-music)
-[![Go Report Card](https://goreportcard.com/badge/github.com/doi2523/get-meta-music)](https://goreportcard.com/report/github.com/doi2523/get-meta-music)
 [![Go CI](https://github.com/doi2523/get-meta-music/actions/workflows/go.yml/badge.svg)](https://github.com/doi2523/get-meta-music/actions/workflows/go.yml)
+[![Go Reference](https://pkg.go.dev/badge/github.com/doi2523/get-meta-music.svg)](https://pkg.go.dev/github.com/doi2523/get-meta-music)
+[![Go Version](https://img.shields.io/badge/Go-1.20+-00ADD8?logo=go&logoColor=white)](https://go.dev/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 🌐 **Language**: **English** | [Tiếng Việt](README_VI.md)
