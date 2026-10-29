@@ -4,41 +4,44 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/doi2523/get-meta-music)](https://goreportcard.com/report/github.com/doi2523/get-meta-music)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-**`get-meta-music`** là bộ giải pháp toàn diện bằng Golang dùng để trích xuất metadata âm nhạc từ **Spotify** và **Apple Music**:
-- 🎧 **Audio Preview**: Lấy link nghe thử 30s chất lượng cao (MP3/AAC).
-- 🖼 **Artwork**: Ảnh bìa bài hát chất lượng gốc (HD 600x600px).
-- 🆔 **ISRC Lookup**: Tra cứu mã định danh âm nhạc quốc tế (ISRC) và liên kết chéo giữa Spotify ⇄ Apple Music.
-- ⚡ **Dual-Mode**: Vừa là **Go Package (Thư viện/SDK)** để import trực tiếp vào dự án Go khác, vừa là **Standalone HTTP REST API Server** & **Vercel Serverless Function**.
+🌐 **Language**: **English** | [Tiếng Việt](README_VI.md)
+
+**`get-meta-music`** is a comprehensive Golang toolkit and microservice designed to extract music metadata from **Spotify** and **Apple Music**:
+- 🎧 **Audio Previews**: Extract 30-second high-quality audio preview streams (MP3/AAC).
+- 🖼 **HD Artwork**: Fetch original high-resolution album cover artwork (up to 600x600px).
+- 🆔 **ISRC Lookup**: Resolve International Standard Recording Codes (ISRC) and cross-link between Spotify ⇄ Apple Music.
+- ⚡ **Dual-Mode Architecture**: Works both as an importable **Go Package / SDK** for other Go projects and as a **Standalone HTTP REST API Server** & **Vercel Serverless Function**.
 
 ---
 
-## 📑 Mục lục
+## 📑 Table of Contents
 
-1. [Cài đặt & Tải về](#-cài-đặt--tải-về)
-2. [Sử dụng như Thư viện Go (Go Package SDK)](#-sử-dụng-như-thư-viện-go-go-package-sdk)
-   - [Gọi nhanh qua hàm tiện ích](#1-gọi-nhanh-qua-hàm-tiện-ích-quickstart)
-   - [Dùng Client với tùy biến (Timeout, Proxy, Silent, Logger)](#2-khởi-tạo-client-với-tùy-biến-nâng-cao)
-   - [Hỗ trợ Context & Timeout](#3-hỗ-trợ-contextcontext-hủy-request)
-   - [Cấu trúc dữ liệu trả về](#4-cấu-trúc-dữ-liệu-model)
-3. [Chạy Server & Sử dụng qua REST API](#-chạy-server--sử-dụng-qua-rest-api)
-   - [Chạy Server Local](#1-khởi-chạy-server-local)
-   - [Deploy lên Vercel](#2-deploy-lên-vercel-serverless)
-   - [Bảng tổng hợp API Endpoints](#3-bảng-tổng-hợp-api-endpoints)
-   - [Chi tiết từng Endpoint & Mẫu cURL](#4-chi-tiết-từng-endpoint--ví-dụ-curl)
-4. [Biến môi trường (Environment Variables)](#-biến-môi-trường-environment-variables)
-5. [Cấu trúc dự án](#-cấu-trúc-dự-án)
+1. [Installation & Download](#-installation--download)
+2. [Go Library / SDK Usage](#-go-library--sdk-usage)
+   - [Quickstart with Helper Functions](#1-quickstart-with-helper-functions)
+   - [Custom Client with Advanced Options (Timeout, Proxy, Silent, Logger)](#2-custom-client-with-advanced-options)
+   - [Context & Cancellation Support](#3-context--cancellation-support)
+   - [Data Models Reference](#4-data-models-reference)
+3. [Running the HTTP Server & REST API](#-running-the-http-server--rest-api)
+   - [Running Locally](#1-running-locally)
+   - [Deploying to Vercel Serverless](#2-deploying-to-vercel-serverless)
+   - [API Endpoints Summary](#3-api-endpoints-summary)
+   - [Endpoint Details & cURL Examples](#4-endpoint-details--curl-examples)
+4. [Environment Variables](#-environment-variables)
+5. [Project Structure](#-project-structure)
+6. [License](#-license)
 
 ---
 
-## 📦 Cài đặt & Tải về
+## 📦 Installation & Download
 
-### Cách 1: Cài đặt làm Go Module cho dự án Go của bạn
-Chạy lệnh sau trong thư mục dự án Go của bạn:
+### Option 1: Install as a Go Module (SDK)
+Run the following command inside your Go project:
 ```bash
 go get github.com/doi2523/get-meta-music
 ```
 
-### Cách 2: Clone mã nguồn về máy để chạy Server hoặc đóng góp code
+### Option 2: Clone repository to run Server or contribute
 ```bash
 git clone https://github.com/doi2523/get-meta-music.git
 cd get-meta-music
@@ -46,14 +49,14 @@ cd get-meta-music
 
 ---
 
-## 💻 Sử dụng như Thư viện Go (Go Package SDK)
+## 💻 Go Library / SDK Usage
 
-Import thư viện vào code Go của bạn:
+Import the package into your Go application:
 ```go
 import metamusic "github.com/doi2523/get-meta-music"
 ```
 
-### 1. Gọi nhanh qua hàm tiện ích (Quickstart)
+### 1. Quickstart with Helper Functions
 
 ```go
 package main
@@ -66,37 +69,37 @@ import (
 )
 
 func main() {
-	// Tự động nhận diện link (Spotify hoặc Apple Music)
+	// Auto-detects whether the URL is Spotify or Apple Music
 	url := "https://open.spotify.com/intl-vi/track/4cOdK2wGLETKBW3PvgPWqT"
-	
+
 	meta, err := metamusic.Get(url)
 	if err != nil {
-		log.Fatalf("Lỗi: %v", err)
+		log.Fatalf("Error: %v", err)
 	}
 
-	fmt.Printf("🎵 Tên bài hát: %s\n", meta.SongTitle)
-	fmt.Printf("👤 Nghệ sĩ:    %s\n", meta.Artist)
-	fmt.Printf("💿 Album:      %s\n", meta.Album)
-	fmt.Printf("🎧 Audio Demo: %s\n", meta.PreviewURL)
-	fmt.Printf("🖼 Ảnh bìa:    %s\n", meta.ImageURL)
-	fmt.Printf("🆔 Mã ISRC:    %s\n", meta.ISRC)
-	fmt.Printf("🍏 Apple URL:  %s\n", meta.AppleMusicURL)
-	fmt.Printf("🟢 Spotify URL:%s\n", meta.SpotifyURL)
+	fmt.Printf("🎵 Song Title:  %s\n", meta.SongTitle)
+	fmt.Printf("👤 Artist:      %s\n", meta.Artist)
+	fmt.Printf("💿 Album:       %s\n", meta.Album)
+	fmt.Printf("🎧 Preview URL: %s\n", meta.PreviewURL)
+	fmt.Printf("🖼 Image URL:   %s\n", meta.ImageURL)
+	fmt.Printf("🆔 ISRC Code:   %s\n", meta.ISRC)
+	fmt.Printf("🍏 Apple Music: %s\n", meta.AppleMusicURL)
+	fmt.Printf("🟢 Spotify:     %s\n", meta.SpotifyURL)
 }
 ```
 
-Các hàm tiện ích có sẵn:
-- `metamusic.Get(url)`: Tự động nhận diện link Spotify hoặc Apple Music.
-- `metamusic.GetSpotify(url)`: Chỉ xử lý link Spotify.
-- `metamusic.GetAppleMusic(url)`: Chỉ xử lý link Apple Music.
-- `metamusic.GetISRC(url)`: Lấy mã ISRC và tìm chéo link nền tảng còn lại.
-- `metamusic.SetSilent(true)`: Tắt toàn bộ log internal ra stdout.
+Top-level convenience functions:
+- `metamusic.Get(url)`: Automatically detects whether the link is from Spotify or Apple Music.
+- `metamusic.GetSpotify(url)`: Extracts metadata specifically for Spotify links.
+- `metamusic.GetAppleMusic(url)`: Extracts metadata specifically for Apple Music links.
+- `metamusic.GetISRC(url)`: Resolves ISRC and cross-platform URLs across streaming services.
+- `metamusic.SetSilent(true)`: Suppresses all internal log messages from printing to standard output.
 
 ---
 
-### 2. Khởi tạo `Client` với tùy biến nâng cao
+### 2. Custom Client with Advanced Options
 
-Trong ứng dụng backend hoặc microservice production, bạn nên khởi tạo `Client` để cấu hình Timeout, Proxy (nếu cần vượt giới hạn rate limit hoặc IP bị chặn), và chế độ log:
+For production backend services, microservices, or scraping behind proxies, configure a custom `Client`:
 
 ```go
 package main
@@ -109,38 +112,37 @@ import (
 )
 
 func main() {
-	// Khởi tạo client tùy chỉnh
+	// Initialize a customized client
 	client := metamusic.NewClient(
-		metamusic.WithTimeout(10*time.Second),                    // Timeout 10 giây
-		metamusic.WithSilent(),                                   // Tắt hoàn toàn log ra stdout
-		// metamusic.WithProxy("http://username:pass@proxy-ip:port"), // Cấu hình Proxy (nếu có)
+		metamusic.WithTimeout(10*time.Second),                    // 10s timeout
+		metamusic.WithSilent(),                                   // Disable stdout logging
+		// metamusic.WithProxy("http://username:pass@proxy-ip:port"), // Optional proxy support
 	)
 
-	// Lấy thông tin bài hát từ Apple Music
 	appleURL := "https://music.apple.com/vn/album/shape-of-you/1201597002?i=1201597040"
 	meta, err := client.GetAppleMusic(appleURL)
 	if err != nil {
-		fmt.Println("Lỗi:", err)
+		fmt.Println("Error:", err)
 		return
 	}
 
-	fmt.Printf("Bài hát: %s - %s\nISRC: %s\nPreview: %s\n",
+	fmt.Printf("Song: %s - %s\nISRC: %s\nPreview: %s\n",
 		meta.SongTitle, meta.Artist, meta.ISRC, meta.PreviewURL)
 }
 ```
 
-Các Options hỗ trợ cho `NewClient`:
-- `WithTimeout(d time.Duration)`: Thời gian chờ tối đa cho các request HTTP.
-- `WithProxy(proxyURL string)`: Hỗ trợ proxy HTTP/HTTPS/SOCKS5.
-- `WithSilent()`: Không in log ra terminal.
-- `WithLogger(l music.Logger)`: Thay thế bằng logger tùy chỉnh (Zap, Logrus, Slog...).
-- `WithHTTPClient(client *http.Client)`: Dùng chung pool HTTP Client sẵn có của ứng dụng.
+Supported Functional Options:
+- `WithTimeout(d time.Duration)`: Custom HTTP timeout.
+- `WithProxy(proxyURL string)`: HTTP, HTTPS, or SOCKS5 proxy support.
+- `WithSilent()`: Disables all internal logging completely.
+- `WithLogger(l music.Logger)`: Injects custom logger (Zap, Logrus, Slog, etc.).
+- `WithHTTPClient(client *http.Client)`: Uses an existing shared HTTP client pool.
 
 ---
 
-### 3. Hỗ trợ `context.Context` (Hủy request)
+### 3. Context & Cancellation Support
 
-Tất cả phương thức của `Client` đều có phiên bản hỗ trợ Context:
+Every client method supports a `context.Context` variant for timeouts and cooperative cancellation:
 - `client.GetWithContext(ctx, url)`
 - `client.GetSpotifyWithContext(ctx, url)`
 - `client.GetAppleMusicWithContext(ctx, url)`
@@ -152,120 +154,120 @@ defer cancel()
 
 meta, err := client.GetWithContext(ctx, "https://open.spotify.com/track/...")
 if err != nil {
-    // Sẽ trả về context.DeadlineExceeded hoặc context.Canceled nếu hết thời gian
-    fmt.Println("Request bị gián đoạn:", err)
+    // Returns context.DeadlineExceeded or context.Canceled if the request exceeds time limit
+    fmt.Println("Request canceled or timed out:", err)
 }
 ```
 
 ---
 
-### 4. Cấu trúc dữ liệu Model
+### 4. Data Models Reference
 
 #### `SongMetadata`
 ```go
 type SongMetadata struct {
-	SongTitle     string `json:"song_title,omitempty"`     // Tên bài hát
-	Artist        string `json:"artist,omitempty"`         // Tên ca sĩ / nghệ sĩ
-	Album         string `json:"album,omitempty"`          // Tên Album
-	SpotifyURL    string `json:"spotify_url,omitempty"`    // Link gốc hoặc link tương ứng trên Spotify
-	AppleMusicURL string `json:"apple_music_url,omitempty"`// Link gốc hoặc link tương ứng trên Apple Music
-	PreviewURL    string `json:"preview_url,omitempty"`    // Link audio nghe thử MP3/M4A 30 giây
-	ImageURL      string `json:"image_url,omitempty"`      // Link ảnh bìa chất lượng cao
-	ISRC          string `json:"isrc,omitempty"`           // Mã định danh quốc tế (ISRC)
-	Source        string `json:"source,omitempty"`         // Nguồn dữ liệu (Spotify / Apple Music / Deezer...)
+	SongTitle     string `json:"song_title,omitempty"`     // Song title
+	Artist        string `json:"artist,omitempty"`         // Artist or band name
+	Album         string `json:"album,omitempty"`          // Album name
+	SpotifyURL    string `json:"spotify_url,omitempty"`    // Spotify canonical or matched URL
+	AppleMusicURL string `json:"apple_music_url,omitempty"`// Apple Music canonical or matched URL
+	PreviewURL    string `json:"preview_url,omitempty"`    // 30-second audio stream URL (MP3/M4A)
+	ImageURL      string `json:"image_url,omitempty"`      // High-resolution artwork URL
+	ISRC          string `json:"isrc,omitempty"`           // International Standard Recording Code
+	Source        string `json:"source,omitempty"`         // Data source (Spotify, Apple Music, Deezer...)
 }
 ```
 
 #### `ISRCData`
 ```go
 type ISRCData struct {
-	ISRC          string `json:"isrc"`                     // Mã ISRC
-	Title         string `json:"title,omitempty"`          // Tên bài hát tra cứu từ ISRC
-	Artist        string `json:"artist,omitempty"`         // Nghệ sĩ
-	PreviewURL    string `json:"preview_url,omitempty"`    // Link audio demo
-	SpotifyURL    string `json:"spotify_url,omitempty"`    // Link Spotify của bài hát
-	AppleMusicURL string `json:"apple_music_url,omitempty"`// Link Apple Music của bài hát
-	Source        string `json:"source,omitempty"`         // Nguồn phân giải ISRC
+	ISRC          string `json:"isrc"`                     // Resolved ISRC code
+	Title         string `json:"title,omitempty"`          // Song title from ISRC lookup
+	Artist        string `json:"artist,omitempty"`         // Artist from ISRC lookup
+	PreviewURL    string `json:"preview_url,omitempty"`    // Audio preview stream URL
+	SpotifyURL    string `json:"spotify_url,omitempty"`    // Spotify track link
+	AppleMusicURL string `json:"apple_music_url,omitempty"`// Apple Music track link
+	Source        string `json:"source,omitempty"`         // Resolution provider
 }
 ```
 
 ---
 
-## 🚀 Chạy Server & Sử dụng qua REST API
+## 🚀 Running the HTTP Server & REST API
 
-### 1. Khởi chạy Server Local
+### 1. Running Locally
 
-Chạy trực tiếp từ mã nguồn:
+Run directly from source:
 ```bash
 go run ./cmd/server
 ```
 
-Hoặc build ra file binary thực thi:
+Or build a standalone binary:
 ```bash
 go build -o server ./cmd/server
 ./server
 ```
 
-Mặc định server sẽ chạy tại cổng `8080` (URL: `http://localhost:8080`). Nếu cổng 8080 đang bị phần mềm khác sử dụng, server sẽ tự động chuyển sang cổng `8088`.
+The server defaults to port `8080` (accessible at `http://localhost:8080`). If port 8080 is already occupied by another service (like Apache or XAMPP), it automatically falls back to port `8088`.
 
 ---
 
-### 2. Deploy lên Vercel Serverless
+### 2. Deploying to Vercel Serverless
 
-Dự án đã có sẵn file `vercel.json` và cấu trúc entrypoint `api/index.go` tương thích chuẩn với **Vercel Go Runtime**:
+The repository comes pre-configured with `vercel.json` and `api/index.go` targeting the **`@vercel/go`** serverless builder:
 
 ```bash
-# 1. Cài đặt Vercel CLI nếu chưa có
+# 1. Install Vercel CLI if not already installed
 npm i -g vercel
 
-# 2. Deploy thử nghiệm
+# 2. Deploy preview build
 vercel
 
-# 3. Deploy Production
+# 3. Deploy to production
 vercel --prod
 ```
 
 ---
 
-### 3. Bảng tổng hợp API Endpoints
+### 3. API Endpoints Summary
 
-Cả bản chạy Local Server lẫn Vercel Serverless Function đều hỗ trợ các đường dẫn sau:
+Both local HTTP server and Vercel Serverless Function expose the following unified routes:
 
-| Phương thức | Đường dẫn (Route) | Alias Vercel | Mô tả |
+| HTTP Method | Route | Vercel Alias | Description |
 | :--- | :--- | :--- | :--- |
-| `GET / POST` | `/metadata` | `/api/metadata` | Lấy đầy đủ metadata (Tự động nhận diện Spotify hoặc Apple Music) |
-| `GET / POST` | `/spotify` | `/api/spotify` | Chỉ xử lý liên kết Spotify |
-| `GET / POST` | `/apple-music` | `/api/apple-music` | Chỉ xử lý liên kết Apple Music |
-| `POST` | `/getInfoMusicV3` | `/api/getInfoMusicV3` | **Chuẩn Locket Dio**: Trả về dữ liệu đóng gói chuẩn cho mobile app / web client |
-| `GET` | `/health` | `/api/health` | Kiểm tra tình trạng hoạt động của Server (Healthcheck) |
-| `GET` | `/` | `/api` | Trang thông tin server & hướng dẫn API |
+| `GET / POST` | `/metadata` | `/api/metadata` | Extract full metadata (Auto-detects Spotify or Apple Music) |
+| `GET / POST` | `/spotify` | `/api/spotify` | Extract metadata strictly for Spotify URLs |
+| `GET / POST` | `/apple-music` | `/api/apple-music` | Extract metadata strictly for Apple Music URLs |
+| `POST` | `/getInfoMusicV3` | `/api/getInfoMusicV3` | **Locket Dio Ecosystem Standard**: Formatted envelope for mobile / client apps |
+| `GET` | `/health` | `/api/health` | Healthcheck endpoint (`{"status":"ok"}`) |
+| `GET` | `/` | `/api` | Server info and usage banner |
 
 ---
 
-### 4. Chi tiết từng Endpoint & Ví dụ cURL
+### 4. Endpoint Details & cURL Examples
 
-#### 🔹 1. Endpoint `/metadata` (Khuyên dùng)
-Trích xuất toàn bộ metadata, audio preview, ảnh bìa, mã ISRC.
+#### 🔹 1. Endpoint `/metadata` (Recommended)
+Fetches metadata, audio preview, artwork, and ISRC.
 
-**Cách 1: Gửi GET Request với Query Parameter**
+**Example 1: GET Request with Query Parameter**
 ```bash
 curl "http://localhost:8080/metadata?url=https://open.spotify.com/intl-vi/track/4cOdK2wGLETKBW3PvgPWqT"
 ```
 
-**Cách 2: Gửi POST Request với JSON Body**
+**Example 2: POST Request with JSON Body**
 ```bash
 curl -X POST "http://localhost:8080/metadata" \
      -H "Content-Type: application/json" \
      -d '{"url": "https://music.apple.com/vn/album/shape-of-you/1201597002?i=1201597040"}'
 ```
 
-**JSON Response mẫu (HTTP 200 OK):**
+**Sample Response (`200 OK`):**
 ```json
 {
   "song_title": "Never Gonna Give You Up",
   "artist": "Rick Astley",
   "spotify_url": "https://open.spotify.com/track/4cOdK2wGLETKBW3PvgPWqT",
-  "apple_music_url": "https://music.apple.com/us/album/never-won-give-you-up/...",
+  "apple_music_url": "https://music.apple.com/us/album/never-gonna-give-you-up/...",
   "preview_url": "https://p.scdn.co/mp3-preview/...",
   "image_url": "https://i.scdn.co/image/...",
   "isrc": "GBARL8700021",
@@ -275,10 +277,10 @@ curl -X POST "http://localhost:8080/metadata" \
 
 ---
 
-#### 🔹 2. Endpoint `/getInfoMusicV3` (Tương thích App Locket Dio)
-Được tối ưu cho hệ thống Locket Dio, nhận format yêu cầu đặc thù và trả về cấu trúc `{ status, message, data }`.
+#### 🔹 2. Endpoint `/getInfoMusicV3` (Locket Dio App Compatible)
+Compatible with Locket Dio mobile/web clients, accepting `{ "url": "...", "platform": "spotify|apple" }`.
 
-**Gửi POST Request:**
+**POST Request:**
 ```bash
 curl -X POST "http://localhost:8080/getInfoMusicV3" \
      -H "Content-Type: application/json" \
@@ -288,7 +290,7 @@ curl -X POST "http://localhost:8080/getInfoMusicV3" \
      }'
 ```
 
-**JSON Response mẫu:**
+**Sample Response:**
 ```json
 {
   "status": "success",
@@ -312,7 +314,7 @@ curl -X POST "http://localhost:8080/getInfoMusicV3" \
 ---
 
 #### 🔹 3. Endpoint `/health`
-Dùng cho load balancer hoặc Kubernetes / Docker kiểm tra sống còn:
+Used by Docker, Kubernetes, or load balancers for liveness/readiness probes:
 ```bash
 curl "http://localhost:8080/health"
 ```
@@ -326,38 +328,39 @@ curl "http://localhost:8080/health"
 
 ---
 
-## ⚙️ Biến môi trường (Environment Variables)
+## ⚙️ Environment Variables
 
-Khi khởi chạy server trên Server/VPS hoặc thiết lập trên Vercel Environment Variables:
+Configure these variables locally, in `.env`, or within your Vercel Project Settings:
 
-| Biến | Mặc định | Ý nghĩa |
+| Variable | Default | Description |
 | :--- | :--- | :--- |
-| `PORT` | `8080` | Cổng lắng nghe của HTTP Server. |
-| `PROXY_URL` | *(trống)* | Địa chỉ Proxy HTTP/HTTPS/SOCKS5 (ví dụ: `http://user:pass@1.2.3.4:8080`) dùng cho mọi request ra ngoài. |
+| `PORT` | `8080` | Port for the local HTTP server listener. |
+| `PROXY_URL` | *(empty)* | Optional HTTP/HTTPS/SOCKS5 proxy (e.g. `http://user:pass@1.2.3.4:8080`) applied to all outgoing outbound requests. |
 
 ---
 
-## 📂 Cấu trúc dự án
+## 📂 Project Structure
 
 ```
 get-meta-music/
 ├── client.go              # Client struct, Functional Options & Context-aware methods
 ├── metamusic.go           # Top-level API facade: Get, GetSpotify, GetAppleMusic, GetISRC
 ├── models.go              # Exported models & Type aliases (SongMetadata, ISRCData)
-├── metamusic_test.go      # Unit tests cho package metamusic
+├── metamusic_test.go      # Unit tests for metamusic package
 ├── go.mod                 # Module name: github.com/doi2523/get-meta-music
-├── LICENSE                # Giấy phép mã nguồn mở MIT
-├── README.md              # Tài liệu hướng dẫn sử dụng chi tiết
-├── vercel.json            # Cấu hình Serverless deployment trên Vercel
+├── LICENSE                # MIT Open Source License
+├── README.md              # English documentation (Default)
+├── README_VI.md           # Vietnamese documentation
+├── vercel.json            # Vercel serverless configuration
 ├── api/
-│   └── index.go           # Entry point cho Vercel Serverless Function
+│   └── index.go           # Vercel Serverless Function entrypoint
 ├── cmd/
 │   └── server/
-│       └── main.go        # Entry point cho Standalone HTTP Server Local / Production
+│       └── main.go        # Standalone HTTP Server binary entrypoint
 └── pkg/
     ├── handler/           # HTTP handlers, CORS, Routing, V3 adapter
     │   └── handler.go
-    └── music/             # Core logic trích xuất metadata, phân giải ISRC & scrape
+    └── music/             # Core scraping logic, ISRC lookup & metadata parsers
         ├── isrc.go
         ├── logger.go
         ├── metadata.go
@@ -368,4 +371,4 @@ get-meta-music/
 
 ## 📄 License
 
-Mã nguồn được phân phối dưới giấy phép [MIT](LICENSE).
+This project is licensed under the [MIT License](LICENSE).
