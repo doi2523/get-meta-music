@@ -2,6 +2,7 @@
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/doi2523/get-meta-music.svg)](https://pkg.go.dev/github.com/doi2523/get-meta-music)
 [![Go Report Card](https://goreportcard.com/badge/github.com/doi2523/get-meta-music)](https://goreportcard.com/report/github.com/doi2523/get-meta-music)
+[![Go CI](https://github.com/doi2523/get-meta-music/actions/workflows/go.yml/badge.svg)](https://github.com/doi2523/get-meta-music/actions/workflows/go.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 🌐 **Language**: **English** | [Tiếng Việt](README_VI.md)
